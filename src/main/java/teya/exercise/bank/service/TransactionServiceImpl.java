@@ -33,6 +33,12 @@ public class TransactionServiceImpl implements TransactionService{
     @Override
     @Transactional
     public void createTransaction(TransactionDTO transaction) {
+        // Validate if accounts exist
+        if(!accountRepository.existsById(transaction.getFromAccountID())){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "From Account does not Exist");
+        }
+
         //Validate if user is still enabled
         if(userRepository.findById(accountRepository.findById(transaction.getFromAccountID()).get().getUserId()).get().isDeleted()){
             throw new ResponseStatusException(
@@ -44,11 +50,7 @@ public class TransactionServiceImpl implements TransactionService{
                     HttpStatus.BAD_REQUEST, "User has been de-activated");
         }
 
-        // Validate if accounts exist
-        if(!accountRepository.existsById(transaction.getFromAccountID())){
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST, "From Account does not Exist");
-        }
+
         if(transaction.getToAccountID() != null && !accountRepository.existsById(transaction.getToAccountID())){
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "To Account does not Exist");

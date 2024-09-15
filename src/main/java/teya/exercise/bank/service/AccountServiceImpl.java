@@ -15,6 +15,7 @@ import teya.exercise.bank.type.TransactionType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -41,7 +42,12 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     public List<AccountResponseDTO> getAccountBalances(UUID userId) {
-        if(userRepository.findById(userId).get().isDeleted){
+        if(userRepository.findById(userId).isEmpty()){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "User does not exist");
+        }
+
+        if(userRepository.findById(userId).get().isDeleted()){
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "User has been de-activated");
         }
