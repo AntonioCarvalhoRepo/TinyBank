@@ -6,10 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import teya.exercise.bank.dto.UserRequestDTO;
 import teya.exercise.bank.service.UserService;
@@ -20,8 +18,11 @@ import java.util.UUID;
 @RequestMapping(path = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserGateway {
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
+
+    public UserGateway(UserService userService) {
+        this.userService = userService;
+    }
 
     @Operation(summary = "Create User")
     @ApiResponses(value = {
@@ -32,9 +33,10 @@ public class UserGateway {
             @ApiResponse(responseCode = "400",
                     description = "Bad request",
                     content = @Content) })
-    @PostMapping(consumes = "application/json")
-    public ResponseEntity<?> createUser(@Valid @RequestBody UserRequestDTO user){
-        return  ResponseEntity.status(HttpStatus.CREATED).body(userService.create(user));
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public UUID createUser(@Valid @RequestBody UserRequestDTO user){
+        return userService.create(user);
     }
 
     @Operation(summary = "Disable User")
@@ -46,9 +48,9 @@ public class UserGateway {
                     description = "Bad request",
                     content = @Content) })
     @PatchMapping("/{id}/disable")
-    public ResponseEntity<Void> disableUser(@PathVariable UUID id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void disableUser(@PathVariable UUID id) {
         userService.disable(id);
-        return ResponseEntity.noContent().build();
     }
 
 }
